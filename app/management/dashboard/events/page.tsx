@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Event } from '@/lib/types';
 import { eventsApi } from '@/lib/api';
 import Table from '@/components/Table';
 import EventModal from '@/components/EventModal';
-import { Search, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, ImageIcon } from 'lucide-react';
 
 export default function EventsPage() {
   const [searchTitle, setSearchTitle] = useState('');
@@ -25,19 +26,19 @@ export default function EventsPage() {
       if (filterTime) params.time_filter = filterTime;
 
       const response = await eventsApi.getAll(params);
-      return response.data;
+      return response.data.data;
     },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Partial<Event>) => eventsApi.create(data),
+    mutationFn: (data: FormData) => eventsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<Event> }) =>
+    mutationFn: ({ id, data }: { id: string; data: FormData }) =>
       eventsApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -73,7 +74,7 @@ export default function EventsPage() {
     }
   };
 
-  const handleSave = async (data: Partial<Event>) => {
+  const handleSave = async (data: FormData) => {
     if (modalMode === 'create') {
       await createMutation.mutateAsync(data);
     } else if (selectedEvent) {
@@ -83,25 +84,37 @@ export default function EventsPage() {
 
   const columns = [
     {
+      header: 'Image',
+      accessor: (row: Event) => (
+        <div className="w-12 h-12 relative bg-gray-100 rounded overflow-hidden">
+          {row.image ? (
+            <Image
+              src={row.image}
+              alt={row.title}
+              fill
+              sizes="48px"
+              className="object-cover"
+            />
+          ) : (
+            <div className="flex items-center justify-center w-full h-full">
+              <ImageIcon className="w-6 h-6 text-gray-400" />
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
       header: 'Title',
       accessor: 'title' as const,
     },
     {
-      header: 'Description',
-      accessor: 'description' as const,
+      header: 'Content',
+      accessor: 'content' as const,
       className: 'text-gray-600 text-sm max-w-xs truncate',
     },
     {
       header: 'Event Date',
       accessor: (row: Event) => new Date(row.event_date).toLocaleString(),
-    },
-    {
-      header: 'Location',
-      accessor: 'location' as const,
-    },
-    {
-      header: 'Participants',
-      accessor: (row: Event) => `${row.current_participants}/${row.max_participants}`,
     },
     {
       header: 'Actions',

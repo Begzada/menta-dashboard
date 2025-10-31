@@ -6,15 +6,13 @@ import { Account } from "@/lib/types";
 import { accountsApi } from "@/lib/api";
 import Table from "@/components/Table";
 import Pagination from "@/components/Pagination";
-import AccountModal from "@/components/AccountModal";
-import { Search, Plus, Trash2 } from "lucide-react";
+import { Search, Trash2 } from "lucide-react";
 
 export default function AccountsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchEmail, setSearchEmail] = useState("");
   const [filterRole, setFilterRole] = useState<string>("");
   const [filterActive, setFilterActive] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const itemsPerPage = 20;
 
   const queryClient = useQueryClient();
@@ -33,13 +31,6 @@ export default function AccountsPage() {
 
       const response = await accountsApi.getAll(params);
       return response.data;
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (email: string) => accountsApi.create(email),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
   });
 
@@ -72,10 +63,6 @@ export default function AccountsPage() {
     },
   });
 
-  const handleCreate = () => {
-    setIsModalOpen(true);
-  };
-
   const handleDelete = async (account: Account) => {
     if (window.confirm(`Are you sure you want to delete account "${account.email}"?`)) {
       try {
@@ -84,10 +71,6 @@ export default function AccountsPage() {
         alert("Failed to delete account");
       }
     }
-  };
-
-  const handleSave = async (email: string) => {
-    await createMutation.mutateAsync(email);
   };
 
   const handleToggleActive = async (account: Account) => {
@@ -194,13 +177,6 @@ export default function AccountsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Accounts</h1>
           <p className="text-gray-600 mt-2">Manage user accounts</p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-        >
-          <Plus className="w-5 h-5" />
-          Create Account
-        </button>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 mb-6">
@@ -271,13 +247,6 @@ export default function AccountsPage() {
           </>
         )}
       </div>
-
-      <AccountModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        mode="create"
-      />
     </div>
   );
 }

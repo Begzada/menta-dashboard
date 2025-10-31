@@ -17,7 +17,7 @@ export default function EditQuestionnairePage() {
     queryKey: ['questionnaire', id],
     queryFn: async () => {
       const response = await questionnairesApi.getById(id);
-      return response.data;
+      return response.data.data;
     },
   });
 
@@ -30,7 +30,7 @@ export default function EditQuestionnairePage() {
     setIsSubmitting(true);
     try {
       await updateMutation.mutateAsync(data);
-      router.push('/dashboard/questionnaires');
+      router.push('/management/dashboard/questionnaires');
     } catch (error) {
       setIsSubmitting(false);
       throw error;
@@ -38,7 +38,7 @@ export default function EditQuestionnairePage() {
   };
 
   const handleCancel = () => {
-    router.push('/dashboard/questionnaires');
+    router.push('/management/dashboard/questionnaires');
   };
 
   if (isLoading) {

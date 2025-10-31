@@ -50,8 +50,6 @@ export const accountsApi = {
 
   getStats: () => axiosClient.get<AccountStats>("/accounts/stats/"),
 
-  create: (email: string) => axiosClient.post<Account>("/accounts/", { email }),
-
   delete: (id: string) => axiosClient.delete(`/accounts/${id}`),
 
   activate: (id: string) => axiosClient.put(`/accounts/${id}/activate`),
@@ -75,15 +73,16 @@ export const therapistsApi = {
     is_verified?: boolean;
     is_accepting_patients?: boolean;
   }) =>
-    axiosClient.get<{ therapists: Therapist[]; total: number }>("/therapists/", {
-      params,
-    }),
+    axiosClient.get<{ therapists: Therapist[]; total: number }>(
+      "/therapists/",
+      {
+        params,
+      }
+    ),
 
   getById: (id: string) => axiosClient.get<Therapist>(`/therapists/${id}`),
 
   getStats: () => axiosClient.get<TherapistStats>("/therapists/stats"),
-
-  create: (data: FormData) => axiosClient.post<Therapist>("/therapists/", data),
 
   update: (id: string, data: FormData) =>
     axiosClient.put<Therapist>(`/therapists/${id}`, data),
@@ -100,6 +99,8 @@ export const therapistsApi = {
 // Certificates API
 export const certificatesApi = {
   getAll: (params?: {
+    limit?: number;
+    offset?: number;
     therapist_id?: string;
     certificate_type?: string;
     status?: string;
@@ -111,10 +112,10 @@ export const certificatesApi = {
 
   getById: (id: string) => axiosClient.get<Certificate>(`/certificates/${id}`),
 
-  approve: (id: string) => axiosClient.put(`/certificates/${id}/approve`),
+  approve: (id: string) => axiosClient.put(`/certificates/${id}/approve/`),
 
   reject: (id: string, rejection_reason: string) =>
-    axiosClient.put(`/certificates/${id}/reject`, { rejection_reason }),
+    axiosClient.put(`/certificates/${id}/reject/`, { rejection_reason }),
 };
 
 // Patients API
@@ -128,8 +129,6 @@ export const patientsApi = {
 
   getStats: () => axiosClient.get<PatientStats>("/patients/stats"),
 
-  create: (data: FormData) => axiosClient.post<Patient>("/patients/", data),
-
   update: (id: string, data: FormData) =>
     axiosClient.put<Patient>(`/patients/${id}`, data),
 
@@ -139,78 +138,62 @@ export const patientsApi = {
 // Events API
 export const eventsApi = {
   getAll: (params?: {
+    limit?: number;
+    offset?: number;
     title?: string;
     time_filter?: string;
     start_date?: string;
     end_date?: string;
   }) =>
-    axiosClient.get<{ events: Event[]; total: number }>("/events/", { params }),
+    axiosClient.get<{ data: { events: Event[]; total: number } }>("/events/", {
+      params,
+    }),
 
-  getById: (id: string) => axiosClient.get<Event>(`/events/${id}`),
+  getById: (id: string) => axiosClient.get<{ data: Event }>(`/events/${id}`),
 
-  getStats: () => axiosClient.get<EventStats>("/events/stats"),
+  getStats: () => axiosClient.get<{ data: EventStats }>("/events/stats"),
 
-  create: (data: Partial<Event>) => axiosClient.post<Event>("/events/", data),
+  create: (data: FormData) =>
+    axiosClient.post<{ data: Event }>("/events/", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
 
-  update: (id: string, data: Partial<Event>) =>
-    axiosClient.put<Event>(`/events/${id}`, data),
+  update: (id: string, data: FormData) =>
+    axiosClient.put<{ data: Event }>(`/events/${id}`, data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
 
   delete: (id: string) => axiosClient.delete(`/events/${id}`),
 };
 
-// Matches API
-export const matchesApi = {
-  getAll: (params?: {
-    patient_id?: string;
-    therapist_id?: string;
-    min_score?: number;
-    max_score?: number;
-  }) =>
-    axiosClient.get<{ matches: Match[]; total: number }>("/matches/", {
-      params,
-    }),
-
-  getById: (id: string) => axiosClient.get<Match>(`/matches/${id}`),
-
-  create: (data: {
-    patient_id: string;
-    therapist_id: string;
-    match_score: number;
-    language_match?: boolean;
-    specialization_match?: boolean;
-  }) => axiosClient.post<Match>("/matches/", data),
-
-  update: (id: string, data: Partial<Match>) =>
-    axiosClient.put<Match>(`/matches/${id}`, data),
-
-  delete: (id: string) => axiosClient.delete(`/matches/${id}`),
-};
-
 // Questionnaires API
 export const questionnairesApi = {
-  getAll: (params?: {
-    is_active?: boolean;
-    limit?: number;
-    offset?: number;
-  }) =>
-    axiosClient.get<{ questionnaires: Questionnaire[]; total: number }>(
-      "/questionnaire-templates/",
-      { params }
-    ),
+  getAll: (params?: { is_active?: boolean; limit?: number; offset?: number }) =>
+    axiosClient.get<{
+      data: {
+        count: number;
+        limit: number;
+        offset: number;
+        templates: Questionnaire[];
+      };
+    }>("/questionnaire-templates/", { params }),
 
   getById: (id: string) =>
-    axiosClient.get<Questionnaire>(`/questionnaire-templates/${id}`),
+    axiosClient.get<{ data: Questionnaire }>(`/questionnaire-templates/${id}`),
 
   create: (data: Partial<Questionnaire>) =>
-    axiosClient.post<Questionnaire>("/questionnaire-templates/", data),
+    axiosClient.post<{ data: Questionnaire }>(
+      "/questionnaire-templates/",
+      data
+    ),
 
   update: (id: string, data: Partial<Questionnaire>) =>
-    axiosClient.put<Questionnaire>(`/questionnaire-templates/${id}`, data),
+    axiosClient.put<{ data: Questionnaire }>(
+      `/questionnaire-templates/${id}`,
+      data
+    ),
 
   delete: (id: string) => axiosClient.delete(`/questionnaire-templates/${id}`),
-
-  toggleActive: (id: string, is_active: boolean) =>
-    axiosClient.put(`/questionnaire-templates/${id}/active`, { is_active }),
 
   getResponses: (id: string) =>
     axiosClient.get<{ responses: QuestionnaireResponse[]; total: number }>(

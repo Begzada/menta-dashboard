@@ -20,7 +20,7 @@ export default function CreateQuestionnairePage() {
     setIsSubmitting(true);
     try {
       await createMutation.mutateAsync(data);
-      router.push('/dashboard/questionnaires');
+      router.push('/management/dashboard/questionnaires');
     } catch (error) {
       setIsSubmitting(false);
       throw error;
@@ -28,7 +28,7 @@ export default function CreateQuestionnairePage() {
   };
 
   const handleCancel = () => {
-    router.push('/dashboard/questionnaires');
+    router.push('/management/dashboard/questionnaires');
   };
 
   return (

@@ -60,11 +60,9 @@ export interface Patient {
 export interface Event {
   id: string;
   title: string;
-  description: string;
+  content: string;
+  image: string;
   event_date: string;
-  location: string;
-  max_participants: number;
-  current_participants: number;
   created_at: string;
   updated_at: string;
 }
@@ -112,21 +110,26 @@ export interface Session {
 }
 
 export interface Question {
-  id: string;
-  question_text: string;
-  question_type: 'text' | 'multiple_choice' | 'scale' | 'yes_no';
+  title: string;
+  type: 'text' | 'multiple_choice' | 'scale' | 'yes_no' | 'checkbox';
+  required: boolean;
   options?: string[];
-  order: number;
+  scale_min?: number;
+  scale_max?: number;
+  scale_labels?: Record<string, string>;
+  max_length?: number;
 }
 
 export interface Questionnaire {
   id: string;
-  title: string;
-  description: string;
-  questions: Question[];
+  name: string;
+  description?: string;
+  target_role?: string;
+  questions: Record<string, Question>;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  version?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface QuestionnaireResponse {

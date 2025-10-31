@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Question, Questionnaire } from "@/lib/types";
-import { Plus, Trash2, MoveUp, MoveDown } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 interface QuestionnaireFormProps {
   questionnaire?: Questionnaire | null;
@@ -11,90 +11,168 @@ interface QuestionnaireFormProps {
   isSubmitting: boolean;
 }
 
+interface QuestionEntry {
+  key: string;
+  question: Partial<Question>;
+}
+
 export default function QuestionnaireForm({
   questionnaire,
   onSubmit,
   onCancel,
   isSubmitting,
 }: QuestionnaireFormProps) {
-  const [title, setTitle] = useState(questionnaire?.title || "");
+  const [name, setName] = useState(questionnaire?.name || "");
   const [description, setDescription] = useState(
     questionnaire?.description || ""
   );
-  const [questions, setQuestions] = useState<Partial<Question>[]>(
-    questionnaire?.questions || []
-  );
+
+  // Convert object to array for easier state management
+  const [questionEntries, setQuestionEntries] = useState<QuestionEntry[]>(() => {
+    if (questionnaire?.questions) {
+      return Object.entries(questionnaire.questions).map(([key, question]) => ({
+        key,
+        question,
+      }));
+    }
+    return [];
+  });
+
   const [error, setError] = useState("");
 
   const addQuestion = () => {
-    setQuestions([
-      ...questions,
+    const newKey = `question_${Date.now()}`;
+    setQuestionEntries([
+      ...questionEntries,
       {
-        question_text: "",
-        question_type: "text",
-        order: questions.length,
+        key: newKey,
+        question: {
+          title: "",
+          type: "text",
+          required: true,
+        },
       },
     ]);
   };
 
   const removeQuestion = (index: number) => {
-    const newQuestions = questions.filter((_, i) => i !== index);
-    setQuestions(
-      newQuestions.map((q, i) => ({
-        ...q,
-        order: i,
-      }))
-    );
+    const newEntries = questionEntries.filter((_, i) => i !== index);
+    setQuestionEntries(newEntries);
   };
 
-  const moveQuestion = (index: number, direction: "up" | "down") => {
-    const newQuestions = [...questions];
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-
-    if (targetIndex < 0 || targetIndex >= newQuestions.length) return;
-
-    [newQuestions[index], newQuestions[targetIndex]] = [
-      newQuestions[targetIndex],
-      newQuestions[index],
-    ];
-
-    setQuestions(
-      newQuestions.map((q, i) => ({
-        ...q,
-        order: i,
-      }))
-    );
+  const updateQuestionKey = (index: number, newKey: string) => {
+    const newEntries = [...questionEntries];
+    newEntries[index] = {
+      ...newEntries[index],
+      key: newKey,
+    };
+    setQuestionEntries(newEntries);
   };
 
   const updateQuestion = (index: number, field: keyof Question, value: any) => {
-    const newQuestions = [...questions];
-    newQuestions[index] = {
-      ...newQuestions[index],
-      [field]: value,
+    const newEntries = [...questionEntries];
+    newEntries[index] = {
+      ...newEntries[index],
+      question: {
+        ...newEntries[index].question,
+        [field]: value,
+      },
     };
-    setQuestions(newQuestions);
+    setQuestionEntries(newEntries);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (questions.length === 0) {
+    if (questionEntries.length === 0) {
       setError("Please add at least one question");
       return;
     }
 
+    // Validate questions
+    for (let i = 0; i < questionEntries.length; i++) {
+      const entry = questionEntries[i];
+      const q = entry.question;
+
+      if (!entry.key || entry.key.trim() === "") {
+        setError(`Question ${i + 1}: Question ID/key is required`);
+        return;
+      }
+
+      if (!q.title || q.title.trim() === "") {
+        setError(`Question ${i + 1}: Question title is required`);
+        return;
+      }
+
+      if (
+        (q.type === "multiple_choice" || q.type === "checkbox") &&
+        (!q.options || q.options.length === 0)
+      ) {
+        setError(
+          `Question ${i + 1}: ${q.type === "checkbox" ? "Checkbox" : "Multiple choice"} questions must have at least one option`
+        );
+        return;
+      }
+
+      if (q.type === "scale" && (!q.scale_min || !q.scale_max)) {
+        setError(
+          `Question ${i + 1}: Scale questions must have min and max values`
+        );
+        return;
+      }
+    }
+
     try {
-      await onSubmit({
-        title,
-        description,
-        questions: questions as Question[],
-        is_active: questionnaire?.is_active ?? true,
+      // Convert array back to object for backend
+      const questionsObject: Record<string, Question> = {};
+
+      questionEntries.forEach((entry) => {
+        const question: any = {
+          title: entry.question.title?.trim(),
+          type: entry.question.type,
+          required: entry.question.required ?? true,
+        };
+
+        // Add type-specific fields
+        if (entry.question.type === "multiple_choice" || entry.question.type === "checkbox") {
+          if (entry.question.options) {
+            question.options = entry.question.options;
+          }
+        }
+
+        if (entry.question.type === "scale") {
+          question.scale_min = entry.question.scale_min || 1;
+          question.scale_max = entry.question.scale_max || 10;
+          if (entry.question.scale_labels) {
+            question.scale_labels = entry.question.scale_labels;
+          }
+        }
+
+        if (entry.question.type === "text" && entry.question.max_length) {
+          question.max_length = entry.question.max_length;
+        }
+
+        questionsObject[entry.key] = question;
       });
+
+      const payload = {
+        name,
+        description: description || undefined,
+        questions: questionsObject,
+        is_active: questionnaire?.is_active ?? false,
+      };
+
+      console.log("Submitting questionnaire:", payload);
+      console.log("Questions JSON:", JSON.stringify(questionsObject, null, 2));
+
+      await onSubmit(payload);
     } catch (err) {
-      setError(
-        (err as any).response?.data?.detail || "Failed to save questionnaire"
-      );
+      console.error("Submit error:", err);
+      const errorDetail =
+        (err as any).response?.data?.error ||
+        (err as any).response?.data?.detail;
+      setError(errorDetail || "Failed to save questionnaire");
     }
   };
 
@@ -114,27 +192,28 @@ export default function QuestionnaireForm({
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Title *
+              Name *
             </label>
             <input
               type="text"
               required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+              placeholder="e.g., Relationship and Communication Assessment"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description *
+              Description
             </label>
             <textarea
-              required
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+              placeholder="Brief description of this questionnaire"
             />
           </div>
         </div>
@@ -154,7 +233,7 @@ export default function QuestionnaireForm({
         </div>
 
         <div className="space-y-4">
-          {questions.map((question, index) => (
+          {questionEntries.map((entry, index) => (
             <div
               key={index}
               className="p-4 border border-gray-200 rounded-md space-y-3"
@@ -163,95 +242,249 @@ export default function QuestionnaireForm({
                 <span className="text-sm font-medium text-gray-700">
                   Question {index + 1}
                 </span>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => moveQuestion(index, "up")}
-                    disabled={index === 0}
-                    className="p-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
-                    title="Move up"
-                  >
-                    <MoveUp className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveQuestion(index, "down")}
-                    disabled={index === questions.length - 1}
-                    className="p-1 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-30"
-                    title="Move down"
-                  >
-                    <MoveDown className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeQuestion(index)}
-                    className="p-1 text-red-600 hover:bg-red-50 rounded"
-                    title="Remove"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => removeQuestion(index)}
+                  className="p-1 text-red-600 hover:bg-red-50 rounded"
+                  title="Remove"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Question Text *
+                  Question Key/ID *
                 </label>
                 <input
                   type="text"
                   required
-                  value={question.question_text || ""}
-                  onChange={(e) =>
-                    updateQuestion(index, "question_text", e.target.value)
-                  }
+                  value={entry.key}
+                  onChange={(e) => updateQuestionKey(index, e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  placeholder="e.g., relationship_status"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Use snake_case, e.g., relationship_status
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Question Type *
+                  Question Title *
                 </label>
-                <select
+                <input
+                  type="text"
                   required
-                  value={question.question_type || "text"}
+                  value={entry.question.title || ""}
                   onChange={(e) =>
-                    updateQuestion(index, "question_type", e.target.value)
+                    updateQuestion(index, "title", e.target.value)
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  <option value="text">Text</option>
-                  <option value="multiple_choice">Multiple Choice</option>
-                  <option value="scale">Scale (1-10)</option>
-                  <option value="yes_no">Yes/No</option>
-                </select>
+                  placeholder="e.g., What is your current relationship status?"
+                />
               </div>
 
-              {question.question_type === "multiple_choice" && (
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Options (comma-separated) *
+                    Question Type *
                   </label>
-                  <input
-                    type="text"
+                  <select
                     required
-                    value={question.options?.join(", ") || ""}
+                    value={entry.question.type || "text"}
+                    onChange={(e) =>
+                      updateQuestion(index, "type", e.target.value)
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  >
+                    <option value="text">Text</option>
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="checkbox">Checkbox (Multi-select)</option>
+                    <option value="scale">Scale</option>
+                    <option value="yes_no">Yes/No</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Required
+                  </label>
+                  <select
+                    value={entry.question.required ? "true" : "false"}
                     onChange={(e) =>
                       updateQuestion(
                         index,
-                        "options",
-                        e.target.value.split(",").map((o) => o.trim())
+                        "required",
+                        e.target.value === "true"
                       )
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    placeholder="Option 1, Option 2, Option 3"
+                  >
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+              </div>
+
+              {entry.question.type === "text" && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Max Length (optional)
+                  </label>
+                  <input
+                    type="number"
+                    value={entry.question.max_length || ""}
+                    onChange={(e) =>
+                      updateQuestion(
+                        index,
+                        "max_length",
+                        e.target.value ? parseInt(e.target.value) : undefined
+                      )
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    placeholder="e.g., 400"
                   />
+                </div>
+              )}
+
+              {entry.question.type === "scale" && (
+                <div className="space-y-3">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Min Value *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={entry.question.scale_min}
+                        onChange={(e) =>
+                          updateQuestion(
+                            index,
+                            "scale_min",
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Max Value *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        value={entry.question.scale_max}
+                        onChange={(e) =>
+                          updateQuestion(
+                            index,
+                            "scale_max",
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Scale labels are optional and can be added in advanced mode
+                  </p>
+                </div>
+              )}
+
+              {(entry.question.type === "multiple_choice" ||
+                entry.question.type === "checkbox") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Options *
+                  </label>
+
+                  {/* Display existing options as chips */}
+                  {entry.question.options &&
+                    entry.question.options.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {entry.question.options.map((option, optIndex) => (
+                          <div
+                            key={optIndex}
+                            className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                          >
+                            <span>{option}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newOptions =
+                                  entry.question.options?.filter(
+                                    (_, i) => i !== optIndex
+                                  );
+                                updateQuestion(index, "options", newOptions);
+                              }}
+                              className="hover:bg-blue-200 rounded-full p-0.5"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                  {/* Input to add new option */}
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Type an option and press Enter"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const input = e.currentTarget;
+                          const value = input.value.trim();
+                          if (value) {
+                            const currentOptions =
+                              entry.question.options || [];
+                            updateQuestion(index, "options", [
+                              ...currentOptions,
+                              value,
+                            ]);
+                            input.value = "";
+                          }
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        const input = e.currentTarget
+                          .previousElementSibling as HTMLInputElement;
+                        const value = input.value.trim();
+                        if (value) {
+                          const currentOptions = entry.question.options || [];
+                          updateQuestion(index, "options", [
+                            ...currentOptions,
+                            value,
+                          ]);
+                          input.value = "";
+                        }
+                      }}
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
+
+                  {(!entry.question.options ||
+                    entry.question.options.length === 0) && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Add at least one option for this {entry.question.type === "checkbox" ? "checkbox" : "multiple choice"} question
+                    </p>
+                  )}
                 </div>
               )}
             </div>
           ))}
 
-          {questions.length === 0 && (
+          {questionEntries.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               No questions added yet. Click &quot;Add Question&quot; to get
               started.

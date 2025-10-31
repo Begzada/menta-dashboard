@@ -7,12 +7,11 @@ import { patientsApi } from '@/lib/api';
 import Table from '@/components/Table';
 import Pagination from '@/components/Pagination';
 import PatientModal from '@/components/PatientModal';
-import { Plus, Edit2, Trash2 } from 'lucide-react';
+import { Edit2, Trash2 } from 'lucide-react';
 
 export default function PatientsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const itemsPerPage = 20;
 
@@ -26,13 +25,6 @@ export default function PatientsPage() {
         offset: (currentPage - 1) * itemsPerPage,
       });
       return response.data;
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: FormData) => patientsApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
     },
   });
 
@@ -51,14 +43,7 @@ export default function PatientsPage() {
     },
   });
 
-  const handleCreate = () => {
-    setModalMode('create');
-    setSelectedPatient(null);
-    setIsModalOpen(true);
-  };
-
   const handleEdit = (patient: Patient) => {
-    setModalMode('edit');
     setSelectedPatient(patient);
     setIsModalOpen(true);
   };
@@ -74,9 +59,7 @@ export default function PatientsPage() {
   };
 
   const handleSave = async (data: FormData) => {
-    if (modalMode === 'create') {
-      await createMutation.mutateAsync(data);
-    } else if (selectedPatient) {
+    if (selectedPatient) {
       await updateMutation.mutateAsync({ id: selectedPatient.id, data });
     }
   };
@@ -137,13 +120,6 @@ export default function PatientsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Patients</h1>
           <p className="text-gray-600 mt-2">Manage patient profiles</p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-        >
-          <Plus className="w-5 h-5" />
-          Create Patient
-        </button>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 mb-6">
@@ -173,7 +149,7 @@ export default function PatientsPage() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
         patient={selectedPatient}
-        mode={modalMode}
+        mode="edit"
       />
     </div>
   );

@@ -7,7 +7,7 @@ import { therapistsApi } from '@/lib/api';
 import Table from '@/components/Table';
 import Pagination from '@/components/Pagination';
 import TherapistModal from '@/components/TherapistModal';
-import { Search, Plus, Edit2, Trash2, CheckCircle, XCircle, UserCheck, UserX } from 'lucide-react';
+import { Search, Edit2, Trash2, CheckCircle, XCircle, UserCheck, UserX } from 'lucide-react';
 
 export default function TherapistsPage() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -15,7 +15,6 @@ export default function TherapistsPage() {
   const [filterVerified, setFilterVerified] = useState<string>('');
   const [filterAccepting, setFilterAccepting] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [selectedTherapist, setSelectedTherapist] = useState<Therapist | null>(null);
   const itemsPerPage = 20;
 
@@ -35,13 +34,6 @@ export default function TherapistsPage() {
 
       const response = await therapistsApi.getAll(params);
       return response.data;
-    },
-  });
-
-  const createMutation = useMutation({
-    mutationFn: (data: FormData) => therapistsApi.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['therapists'] });
     },
   });
 
@@ -76,14 +68,7 @@ export default function TherapistsPage() {
     },
   });
 
-  const handleCreate = () => {
-    setModalMode('create');
-    setSelectedTherapist(null);
-    setIsModalOpen(true);
-  };
-
   const handleEdit = (therapist: Therapist) => {
-    setModalMode('edit');
     setSelectedTherapist(therapist);
     setIsModalOpen(true);
   };
@@ -99,9 +84,7 @@ export default function TherapistsPage() {
   };
 
   const handleSave = async (data: FormData) => {
-    if (modalMode === 'create') {
-      await createMutation.mutateAsync(data);
-    } else if (selectedTherapist) {
+    if (selectedTherapist) {
       await updateMutation.mutateAsync({ id: selectedTherapist.id, data });
     }
   };
@@ -215,13 +198,6 @@ export default function TherapistsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Therapists</h1>
           <p className="text-gray-600 mt-2">Manage therapist profiles</p>
         </div>
-        <button
-          onClick={handleCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
-        >
-          <Plus className="w-5 h-5" />
-          Create Therapist
-        </button>
       </div>
 
       <div className="bg-white rounded-lg border border-gray-200 mb-6">
@@ -297,7 +273,7 @@ export default function TherapistsPage() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSave}
         therapist={selectedTherapist}
-        mode={modalMode}
+        mode="edit"
       />
     </div>
   );

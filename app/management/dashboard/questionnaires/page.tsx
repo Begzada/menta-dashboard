@@ -1,114 +1,81 @@
-'use client';
+"use client";
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Questionnaire } from '@/lib/types';
-import { questionnairesApi } from '@/lib/api';
-import Table from '@/components/Table';
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Questionnaire } from "@/lib/types";
+import { questionnairesApi } from "@/lib/api";
+import Table from "@/components/Table";
+import { Plus, Edit2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function QuestionnairesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['questionnaires'],
+    queryKey: ["questionnaires"],
     queryFn: async () => {
       const response = await questionnairesApi.getAll();
-      return response.data;
+      return response.data.data;
     },
   });
+
+  console.log(data);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => questionnairesApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questionnaires'] });
-    },
-  });
-
-  const toggleActiveMutation = useMutation({
-    mutationFn: ({ id, is_active }: { id: string; is_active: boolean }) =>
-      questionnairesApi.toggleActive(id, is_active),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questionnaires'] });
+      queryClient.invalidateQueries({ queryKey: ["questionnaires"] });
     },
   });
 
   const handleDelete = async (questionnaire: Questionnaire) => {
     if (
-      window.confirm(
-        `Are you sure you want to delete "${questionnaire.title}"?`
-      )
+      window.confirm(`Are you sure you want to delete "${questionnaire.name}"?`)
     ) {
       try {
         await deleteMutation.mutateAsync(questionnaire.id);
       } catch (error) {
-        alert('Failed to delete questionnaire');
+        alert("Failed to delete questionnaire");
       }
-    }
-  };
-
-  const handleToggleActive = async (questionnaire: Questionnaire) => {
-    try {
-      await toggleActiveMutation.mutateAsync({
-        id: questionnaire.id,
-        is_active: !questionnaire.is_active,
-      });
-    } catch (error) {
-      alert('Failed to update questionnaire status');
     }
   };
 
   const columns = [
     {
-      header: 'Title',
-      accessor: 'title' as const,
+      header: "Name",
+      accessor: "name" as const,
     },
     {
-      header: 'Description',
-      accessor: 'description' as const,
-      className: 'text-gray-600 text-sm max-w-xs truncate',
+      header: "Description",
+      accessor: (row: Questionnaire) => row.description || "-",
+      className: "text-gray-600 text-sm max-w-xs truncate",
     },
     {
-      header: 'Questions',
-      accessor: (row: Questionnaire) => row.questions?.length || 0,
+      header: "Questions",
+      accessor: (row: Questionnaire) =>
+        row.questions ? Object.keys(row.questions).length : 0,
     },
     {
-      header: 'Status',
+      header: "Status",
       accessor: (row: Questionnaire) => (
         <span
           className={`px-2 py-1 text-xs font-semibold rounded-full ${
             row.is_active
-              ? 'bg-green-100 text-green-800'
-              : 'bg-gray-100 text-gray-800'
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-800"
           }`}
         >
-          {row.is_active ? 'Active' : 'Inactive'}
+          {row.is_active ? "Active" : "Inactive"}
         </span>
       ),
     },
     {
-      header: 'Actions',
+      header: "Actions",
       accessor: (row: Questionnaire) => (
         <div className="flex gap-2">
           <button
-            onClick={() => handleToggleActive(row)}
-            className={`p-1 rounded ${
-              row.is_active
-                ? 'text-yellow-600 hover:bg-yellow-50'
-                : 'text-green-600 hover:bg-green-50'
-            }`}
-            title={row.is_active ? 'Deactivate' : 'Activate'}
-          >
-            {row.is_active ? (
-              <ToggleRight className="w-4 h-4" />
-            ) : (
-              <ToggleLeft className="w-4 h-4" />
-            )}
-          </button>
-          <button
             onClick={() =>
-              router.push(`/dashboard/questionnaires/${row.id}/edit`)
+              router.push(`/management/dashboard/questionnaires/${row.id}/edit`)
             }
             className="p-1 text-blue-600 hover:bg-blue-50 rounded"
             title="Edit"
@@ -137,7 +104,7 @@ export default function QuestionnairesPage() {
           </p>
         </div>
         <button
-          onClick={() => router.push('/dashboard/questionnaires/create')}
+          onClick={() => router.push("/management/dashboard/questionnaires/create")}
           className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
         >
           <Plus className="w-5 h-5" />
@@ -155,7 +122,7 @@ export default function QuestionnairesPage() {
         {isLoading ? (
           <div className="text-center py-12 text-gray-500">Loading...</div>
         ) : (
-          <Table data={data?.questionnaires || []} columns={columns} />
+          <Table data={data?.templates || []} columns={columns} />
         )}
       </div>
     </div>

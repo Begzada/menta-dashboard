@@ -1,0 +1,46 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main  # Change to your main branch name if different
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            # Navigate to project directory
+            cd ~/${{ secrets.PROJECT_FOLDER }}
+
+            # Pull latest changes or clone if doesn't exist
+            if [ -d ".git" ]; then
+              echo "Pulling latest changes..."
+              git pull origin main
+            else
+              echo "Directory exists but not a git repo. Please check manually."
+              exit 1
+            fi
+
+            # Install dependencies
+            echo "Installing dependencies..."
+            npm install
+
+            # Build the application
+            echo "Building application..."
+            npm run build
+
+            # Restart with PM2
+            echo "Restarting application with PM2..."
+            pm2 delete menta-dashboard 2>/dev/null || true
+            pm2 start npm --name "menta-dashboard" -- start
+            pm2 save
