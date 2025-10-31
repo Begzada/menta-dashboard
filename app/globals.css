@@ -24,3 +24,11 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+input::placeholder {
+  @apply text-black/30;
+}
+
+input {
+  @apply !text-black;
+}

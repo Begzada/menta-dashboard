@@ -1,0 +1,2206 @@
+{
+	"info": {
+		"name": "Menta Backend - Admin API",
+		"description": "Complete API documentation for Admin role endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "admin_session_id",
+			"value": "9b623d34-a31a-4de9-9f54-5bbfa2a68e5a",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Send OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@gmail.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/send-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "send-otp"]
+						},
+						"description": "Send OTP to email for authentication. Works for both new and existing accounts."
+					}
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@gmail.com\",\n  \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/verify-otp",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "verify-otp"]
+						},
+						"description": "Verify OTP and get session_id. Returns account info and session for authentication."
+					}
+				},
+				{
+					"name": "Sign Out",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/sign-out",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "sign-out"]
+						},
+						"description": "Sign out and invalidate current session."
+					}
+				}
+			]
+		},
+		{
+			"name": "Accounts",
+			"item": [
+				{
+					"name": "Get All Accounts (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["accounts"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Number of results to return"
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"description": "Number of results to skip"
+								},
+								{
+									"key": "email",
+									"value": "admin@gmail.com",
+									"disabled": true,
+									"description": "Filter by email"
+								},
+								{
+									"key": "role",
+									"value": "admin",
+									"disabled": true,
+									"description": "Filter by role (admin, therapist, patient)"
+								},
+								{
+									"key": "is_active",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by active status"
+								},
+								{
+									"key": "email_verified",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by email verification status"
+								},
+								{
+									"key": "auth_provider",
+									"value": "email",
+									"disabled": true,
+									"description": "Filter by auth provider"
+								}
+							]
+						},
+						"description": "Get all accounts with optional filters. Supports filtering by email, role, active status, email verification, and auth provider."
+					}
+				},
+				{
+					"name": "Get Account by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/9b623d34-a31a-4de9-9f54-5bbfa2a68e5a",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "9b623d34-a31a-4de9-9f54-5bbfa2a68e5a"]
+						},
+						"description": "Get specific account by ID."
+					}
+				},
+				{
+					"name": "Create Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newuser@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts",
+							"host": ["{{base_url}}"],
+							"path": ["accounts"]
+						},
+						"description": "Create a new account. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}"]
+						},
+						"description": "Soft delete an account."
+					}
+				},
+				{
+					"name": "Activate Account",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}/activate",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}", "activate"]
+						},
+						"description": "Activate an account."
+					}
+				},
+				{
+					"name": "Deactivate Account",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}/deactivate",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}", "deactivate"]
+						},
+						"description": "Deactivate an account."
+					}
+				},
+				{
+					"name": "Verify Email",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}/verify-email",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}", "verify-email"]
+						},
+						"description": "Mark email as verified for an account."
+					}
+				},
+				{
+					"name": "Unverify Email",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}/unverify-email",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}", "unverify-email"]
+						},
+						"description": "Unmark email verification for an account."
+					}
+				},
+				{
+					"name": "Update Last Login",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}/last-login",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}", "last-login"]
+						},
+						"description": "Update last login timestamp for an account."
+					}
+				},
+				{
+					"name": "Update Account Role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"role\": \"therapist\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/{account_id}/role",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "{account_id}", "role"]
+						},
+						"description": "Update account role. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Get Account Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/stats",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "stats"]
+						},
+						"description": "Get account statistics (total, by role, active/inactive counts)."
+					}
+				},
+				{
+					"name": "Get Account Count by Role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/count/role?role=admin",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "count", "role"],
+							"query": [
+								{
+									"key": "role",
+									"value": "admin",
+									"description": "Role to count (admin, therapist, patient)"
+								}
+							]
+						},
+						"description": "Get count of accounts by specific role."
+					}
+				},
+				{
+					"name": "Get Active Account Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/count/active",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "count", "active"]
+						},
+						"description": "Get count of active accounts."
+					}
+				},
+				{
+					"name": "Check Email Exists",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/check/email-exists?email=test@example.com",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "check", "email-exists"],
+							"query": [
+								{
+									"key": "email",
+									"value": "test@example.com"
+								}
+							]
+						},
+						"description": "Check if an email already exists in the system."
+					}
+				}
+			]
+		},
+		{
+			"name": "Certificates",
+			"item": [
+				{
+					"name": "Get All Certificates (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates",
+							"host": ["{{base_url}}"],
+							"path": ["certificates"],
+							"query": [
+								{
+									"key": "therapist_id",
+									"value": "{therapist_id}",
+									"disabled": true,
+									"description": "Filter by therapist ID"
+								},
+								{
+									"key": "certificate_type",
+									"value": "license",
+									"disabled": true,
+									"description": "Filter by certificate type"
+								},
+								{
+									"key": "status",
+									"value": "approved",
+									"disabled": true,
+									"description": "Filter by status (pending, approved, rejected)"
+								}
+							]
+						},
+						"description": "Get all certificates with optional filters for therapist, type, and status."
+					}
+				},
+				{
+					"name": "Get Certificate by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates/{certificate_id}",
+							"host": ["{{base_url}}"],
+							"path": ["certificates", "{certificate_id}"]
+						},
+						"description": "Get specific certificate by ID."
+					}
+				},
+				{
+					"name": "Approve Certificate",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/certificates/{certificate_id}/approve",
+							"host": ["{{base_url}}"],
+							"path": ["certificates", "{certificate_id}", "approve"]
+						},
+						"description": "Approve a therapist's certificate."
+					}
+				},
+				{
+					"name": "Reject Certificate",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rejection_reason\": \"Document is not clear or incomplete\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/certificates/{certificate_id}/reject",
+							"host": ["{{base_url}}"],
+							"path": ["certificates", "{certificate_id}", "reject"]
+						},
+						"description": "Reject a therapist's certificate with reason. Body type: Raw JSON."
+					}
+				}
+			]
+		},
+		{
+			"name": "Therapists",
+			"item": [
+				{
+					"name": "Get All Therapists (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["therapists"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "query",
+									"value": "anxiety",
+									"disabled": true,
+									"description": "General search across multiple fields"
+								},
+								{
+									"key": "specialization",
+									"value": "Anxiety",
+									"disabled": true,
+									"description": "Search by single specialization"
+								},
+								{
+									"key": "language",
+									"value": "English",
+									"disabled": true,
+									"description": "Search by single language"
+								},
+								{
+									"key": "education",
+									"value": "PhD",
+									"disabled": true,
+									"description": "Search by education"
+								},
+								{
+									"key": "specializations",
+									"value": "Anxiety,Depression",
+									"disabled": true,
+									"description": "Filter by comma-separated specializations"
+								},
+								{
+									"key": "languages",
+									"value": "English,Turkish",
+									"disabled": true,
+									"description": "Filter by comma-separated languages"
+								},
+								{
+									"key": "min_experience",
+									"value": "3",
+									"disabled": true,
+									"description": "Minimum years of experience"
+								},
+								{
+									"key": "max_experience",
+									"value": "10",
+									"disabled": true,
+									"description": "Maximum years of experience"
+								},
+								{
+									"key": "min_rate",
+									"value": "50",
+									"disabled": true,
+									"description": "Minimum hourly rate"
+								},
+								{
+									"key": "max_rate",
+									"value": "200",
+									"disabled": true,
+									"description": "Maximum hourly rate"
+								},
+								{
+									"key": "is_verified",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by verification status"
+								},
+								{
+									"key": "is_accepting_patients",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by accepting patients status"
+								}
+							]
+						},
+						"description": "Get all therapists with optional search and filter parameters. All filters can be combined in one endpoint."
+					}
+				},
+				{
+					"name": "Get Therapist by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}"]
+						},
+						"description": "Get specific therapist by ID."
+					}
+				},
+				{
+					"name": "Create Therapist",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "John",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "Doe",
+									"type": "text"
+								},
+								{
+									"key": "license_number",
+									"value": "LIC123456",
+									"type": "text"
+								},
+								{
+									"key": "specializations",
+									"value": "Anxiety,Depression,PTSD",
+									"type": "text"
+								},
+								{
+									"key": "years_of_experience",
+									"value": "5",
+									"type": "text"
+								},
+								{
+									"key": "education",
+									"value": "PhD in Clinical Psychology, Stanford University",
+									"type": "text"
+								},
+								{
+									"key": "languages",
+									"value": "English,Turkish",
+									"type": "text"
+								},
+								{
+									"key": "hourly_rate",
+									"value": "150.00",
+									"type": "text"
+								},
+								{
+									"key": "bio",
+									"value": "Experienced therapist specializing in anxiety and depression treatment",
+									"type": "text"
+								},
+								{
+									"key": "license_document",
+									"type": "file",
+									"src": "/path/to/license.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/therapists",
+							"host": ["{{base_url}}"],
+							"path": ["therapists"]
+						},
+						"description": "Create a new therapist. Body type: Form Data (multipart/form-data) for file upload."
+					}
+				},
+				{
+					"name": "Update Therapist",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "John",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "last_name",
+									"value": "Doe",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "specializations",
+									"value": "Anxiety,Depression",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "hourly_rate",
+									"value": "175.00",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "bio",
+									"value": "Updated bio",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}"]
+						},
+						"description": "Update therapist details. Body type: Form Data. All fields are optional."
+					}
+				},
+				{
+					"name": "Delete Therapist",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}"]
+						},
+						"description": "Soft delete a therapist."
+					}
+				},
+				{
+					"name": "Hard Delete Therapist",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}/hard",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}", "hard"]
+						},
+						"description": "Permanently delete a therapist."
+					}
+				},
+				{
+					"name": "Restore Therapist",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}", "restore"]
+						},
+						"description": "Restore a soft-deleted therapist."
+					}
+				},
+				{
+					"name": "Update Verification Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"is_verified\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}/verification",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}", "verification"]
+						},
+						"description": "Update therapist verification status. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Update Accepting Patients Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"is_accepting_patients\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}/accepting",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}", "accepting"]
+						},
+						"description": "Update therapist accepting patients status. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Check and Update Verification Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists/{therapist_id}/verification/check",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "{therapist_id}", "verification", "check"]
+						},
+						"description": "Check and automatically update verification status based on requirements."
+					}
+				},
+				{
+					"name": "Get Therapist Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/therapists/stats",
+							"host": ["{{base_url}}"],
+							"path": ["therapists", "stats"]
+						},
+						"description": "Get therapist statistics (total, verified, accepting patients counts)."
+					}
+				}
+			]
+		},
+		{
+			"name": "Patients",
+			"item": [
+				{
+					"name": "Get All Patients",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["patients"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get all patients with pagination."
+					}
+				},
+				{
+					"name": "Get Patient by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{patient_id}",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{patient_id}"]
+						},
+						"description": "Get specific patient by ID."
+					}
+				},
+				{
+					"name": "Create Patient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "Sarah",
+									"type": "text"
+								},
+								{
+									"key": "last_name",
+									"value": "Smith",
+									"type": "text"
+								},
+								{
+									"key": "phone",
+									"value": "+905551234567",
+									"type": "text"
+								},
+								{
+									"key": "birth_date",
+									"value": "1995-05-15",
+									"type": "text"
+								},
+								{
+									"key": "gender",
+									"value": "female",
+									"type": "text"
+								},
+								{
+									"key": "timezone",
+									"value": "Europe/Istanbul",
+									"type": "text"
+								},
+								{
+									"key": "language",
+									"value": "English",
+									"type": "text"
+								},
+								{
+									"key": "bio",
+									"value": "Looking for help with anxiety management",
+									"type": "text"
+								},
+								{
+									"key": "profile_picture",
+									"type": "file",
+									"src": "/path/to/profile.jpg",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/patients",
+							"host": ["{{base_url}}"],
+							"path": ["patients"]
+						},
+						"description": "Create a new patient. Body type: Form Data (multipart/form-data) for file upload."
+					}
+				},
+				{
+					"name": "Update Patient",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "first_name",
+									"value": "Sarah",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "bio",
+									"value": "Updated bio",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/patients/{patient_id}",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{patient_id}"]
+						},
+						"description": "Update patient details. Body type: Form Data. All fields are optional."
+					}
+				},
+				{
+					"name": "Delete Patient",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{patient_id}",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{patient_id}"]
+						},
+						"description": "Soft delete a patient."
+					}
+				},
+				{
+					"name": "Restore Patient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/{patient_id}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "{patient_id}", "restore"]
+						},
+						"description": "Restore a soft-deleted patient."
+					}
+				},
+				{
+					"name": "Get Patient Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/patients/stats",
+							"host": ["{{base_url}}"],
+							"path": ["patients", "stats"]
+						},
+						"description": "Get patient statistics (total count)."
+					}
+				}
+			]
+		},
+		{
+			"name": "Events",
+			"item": [
+				{
+					"name": "Get All Events (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": ["{{base_url}}"],
+							"path": ["events"],
+							"query": [
+								{
+									"key": "title",
+									"value": "Mental Health",
+									"disabled": true,
+									"description": "Filter by title"
+								},
+								{
+									"key": "time_filter",
+									"value": "upcoming",
+									"disabled": true,
+									"description": "Filter by time (upcoming, past, today)"
+								},
+								{
+									"key": "start_date",
+									"value": "2025-10-01",
+									"disabled": true,
+									"description": "Filter events from this date"
+								},
+								{
+									"key": "end_date",
+									"value": "2025-10-31",
+									"disabled": true,
+									"description": "Filter events until this date"
+								}
+							]
+						},
+						"description": "Get all events with optional filters for title, time period, and date range."
+					}
+				},
+				{
+					"name": "Get Event by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{event_id}",
+							"host": ["{{base_url}}"],
+							"path": ["events", "{event_id}"]
+						},
+						"description": "Get specific event by ID."
+					}
+				},
+				{
+					"name": "Create Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Mental Health Awareness Workshop\",\n  \"description\": \"Interactive workshop on mental health\",\n  \"event_date\": \"2025-10-20T14:00:00Z\",\n  \"location\": \"Online\",\n  \"max_participants\": 50\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events",
+							"host": ["{{base_url}}"],
+							"path": ["events"]
+						},
+						"description": "Create a new event. Admin only. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Update Event",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Event Title\",\n  \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/events/{event_id}",
+							"host": ["{{base_url}}"],
+							"path": ["events", "{event_id}"]
+						},
+						"description": "Update event details. Admin only. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Delete Event (Soft)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{event_id}",
+							"host": ["{{base_url}}"],
+							"path": ["events", "{event_id}"]
+						},
+						"description": "Soft delete an event. Admin only."
+					}
+				},
+				{
+					"name": "Hard Delete Event",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{event_id}/hard",
+							"host": ["{{base_url}}"],
+							"path": ["events", "{event_id}", "hard"]
+						},
+						"description": "Permanently delete an event. Admin only."
+					}
+				},
+				{
+					"name": "Restore Event",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/{event_id}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["events", "{event_id}", "restore"]
+						},
+						"description": "Restore a soft-deleted event. Admin only."
+					}
+				},
+				{
+					"name": "Get Event Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/events/stats",
+							"host": ["{{base_url}}"],
+							"path": ["events", "stats"]
+						},
+						"description": "Get event statistics. Admin only."
+					}
+				}
+			]
+		},
+		{
+			"name": "Therapist-Patient Matches",
+			"item": [
+				{
+					"name": "Get All Matches (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches",
+							"host": ["{{base_url}}"],
+							"path": ["matches"],
+							"query": [
+								{
+									"key": "patient_id",
+									"value": "{patient_id}",
+									"disabled": true,
+									"description": "Filter by patient ID"
+								},
+								{
+									"key": "therapist_id",
+									"value": "{therapist_id}",
+									"disabled": true,
+									"description": "Filter by therapist ID"
+								},
+								{
+									"key": "min_score",
+									"value": "70",
+									"disabled": true,
+									"description": "Minimum match score"
+								},
+								{
+									"key": "max_score",
+									"value": "100",
+									"disabled": true,
+									"description": "Maximum match score"
+								},
+								{
+									"key": "language_match",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by language match"
+								},
+								{
+									"key": "include_relations",
+									"value": "true",
+									"disabled": true,
+									"description": "Include related data"
+								},
+								{
+									"key": "sort_by",
+									"value": "score",
+									"disabled": true,
+									"description": "Sort by field (score, created_at)"
+								},
+								{
+									"key": "order",
+									"value": "desc",
+									"disabled": true,
+									"description": "Sort order (asc, desc)"
+								}
+							]
+						},
+						"description": "Get all therapist-patient matches with optional filters."
+					}
+				},
+				{
+					"name": "Get Match by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}"]
+						},
+						"description": "Get specific match by ID."
+					}
+				},
+				{
+					"name": "Get Match Details by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}/details",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}", "details"]
+						},
+						"description": "Get detailed match information with related data."
+					}
+				},
+				{
+					"name": "Get Patient Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/patient/{patient_id}",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "patient", "{patient_id}"],
+							"query": [
+								{
+									"key": "min_score",
+									"value": "70",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all matches for a specific patient."
+					}
+				},
+				{
+					"name": "Get Patient Match Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/patient/{patient_id}/count",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "patient", "{patient_id}", "count"]
+						},
+						"description": "Get count of matches for a specific patient."
+					}
+				},
+				{
+					"name": "Get Therapist Matches",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/therapist/{therapist_id}",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "therapist", "{therapist_id}"],
+							"query": [
+								{
+									"key": "min_score",
+									"value": "70",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get all matches for a specific therapist."
+					}
+				},
+				{
+					"name": "Get Therapist Match Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/therapist/{therapist_id}/count",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "therapist", "{therapist_id}", "count"]
+						},
+						"description": "Get count of matches for a specific therapist."
+					}
+				},
+				{
+					"name": "Check Match Exists",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/check?patient_id={patient_id}&therapist_id={therapist_id}",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "check"],
+							"query": [
+								{
+									"key": "patient_id",
+									"value": "{patient_id}"
+								},
+								{
+									"key": "therapist_id",
+									"value": "{therapist_id}"
+								}
+							]
+						},
+						"description": "Check if a match exists between patient and therapist."
+					}
+				},
+				{
+					"name": "Create Match",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"patient_id\": \"patient-uuid\",\n  \"therapist_id\": \"therapist-uuid\",\n  \"match_score\": 85,\n  \"language_match\": true,\n  \"specialization_match\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/matches",
+							"host": ["{{base_url}}"],
+							"path": ["matches"]
+						},
+						"description": "Create a new therapist-patient match. Admin only. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Update Match",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"match_score\": 90\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}"]
+						},
+						"description": "Update match details. Admin only. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Update Match Score",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"score\": 95\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}/score",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}", "score"]
+						},
+						"description": "Update only the match score. Admin only. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Delete Match (Soft)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}"]
+						},
+						"description": "Soft delete a match. Admin only."
+					}
+				},
+				{
+					"name": "Hard Delete Match",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}/hard",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}", "hard"]
+						},
+						"description": "Permanently delete a match. Admin only."
+					}
+				},
+				{
+					"name": "Restore Match",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/{match_id}/restore",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "{match_id}", "restore"]
+						},
+						"description": "Restore a soft-deleted match. Admin only."
+					}
+				},
+				{
+					"name": "Bulk Create Matches",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n  {\n    \"patient_id\": \"patient-uuid-1\",\n    \"therapist_id\": \"therapist-uuid-1\",\n    \"match_score\": 85\n  },\n  {\n    \"patient_id\": \"patient-uuid-2\",\n    \"therapist_id\": \"therapist-uuid-2\",\n    \"match_score\": 90\n  }\n]"
+						},
+						"url": {
+							"raw": "{{base_url}}/matches/bulk",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "bulk"]
+						},
+						"description": "Create multiple matches at once. Admin only. Body type: Raw JSON array."
+					}
+				},
+				{
+					"name": "Get Match Statistics",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/matches/statistics",
+							"host": ["{{base_url}}"],
+							"path": ["matches", "statistics"]
+						},
+						"description": "Get match statistics. Admin only."
+					}
+				}
+			]
+		},
+		{
+			"name": "Chats",
+			"item": [
+				{
+					"name": "Get All Chats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats",
+							"host": ["{{base_url}}"],
+							"path": ["chats"]
+						},
+						"description": "Get all chats. Admin only."
+					}
+				},
+				{
+					"name": "Get Active Chats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/active",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "active"]
+						},
+						"description": "Get all active chats. Admin only."
+					}
+				},
+				{
+					"name": "Get Chat by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/{chat_id}",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "{chat_id}"]
+						},
+						"description": "Get specific chat by ID."
+					}
+				},
+				{
+					"name": "Get Chat Messages",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/{chat_id}/messages",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "{chat_id}", "messages"]
+						},
+						"description": "Get all messages in a specific chat."
+					}
+				},
+				{
+					"name": "Delete Chat",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/{chat_id}",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "{chat_id}"]
+						},
+						"description": "Delete a chat. Admin only."
+					}
+				},
+				{
+					"name": "Activate Chat",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/{chat_id}/activate",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "{chat_id}", "activate"]
+						},
+						"description": "Activate a chat. Admin only."
+					}
+				},
+				{
+					"name": "Deactivate Chat",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/chats/{chat_id}/deactivate",
+							"host": ["{{base_url}}"],
+							"path": ["chats", "{chat_id}", "deactivate"]
+						},
+						"description": "Deactivate a chat. Admin only."
+					}
+				}
+			]
+		},
+		{
+			"name": "Time Slots",
+			"item": [
+				{
+					"name": "Get Time Slot by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeslots/{timeslot_id}",
+							"host": ["{{base_url}}"],
+							"path": ["timeslots", "{timeslot_id}"]
+						},
+						"description": "Get specific time slot by ID."
+					}
+				},
+				{
+					"name": "Get Therapist Time Slots",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeslots/therapist/{therapist_id}",
+							"host": ["{{base_url}}"],
+							"path": ["timeslots", "therapist", "{therapist_id}"]
+						},
+						"description": "Get all time slots for a specific therapist."
+					}
+				},
+				{
+					"name": "Get Therapist Time Slots by Day",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeslots/therapist/{therapist_id}/day/{day_of_week}",
+							"host": ["{{base_url}}"],
+							"path": ["timeslots", "therapist", "{therapist_id}", "day", "{day_of_week}"]
+						},
+						"description": "Get therapist time slots for a specific day (0=Sunday, 6=Saturday)."
+					}
+				},
+				{
+					"name": "Check Therapist Availability",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/timeslots/therapist/{therapist_id}/availability?day=1&start_time=09:00:00&end_time=10:00:00",
+							"host": ["{{base_url}}"],
+							"path": ["timeslots", "therapist", "{therapist_id}", "availability"],
+							"query": [
+								{
+									"key": "day",
+									"value": "1",
+									"description": "Day of week (0-6)"
+								},
+								{
+									"key": "start_time",
+									"value": "09:00:00",
+									"description": "Start time"
+								},
+								{
+									"key": "end_time",
+									"value": "10:00:00",
+									"description": "End time"
+								}
+							]
+						},
+						"description": "Check if therapist is available at specific time."
+					}
+				}
+			]
+		},
+		{
+			"name": "Questionnaire Templates",
+			"item": [
+				{
+					"name": "Get All Templates (with filters)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								},
+								{
+									"key": "is_active",
+									"value": "true",
+									"disabled": true,
+									"description": "Filter by active status (true for active template, false for inactive templates)"
+								}
+							]
+						},
+						"description": "Get all questionnaire templates. Use ?is_active=true to get active template only, ?is_active=false for inactive templates."
+					}
+				},
+				{
+					"name": "Get Template by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates/{template_id}",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates", "{template_id}"]
+						},
+						"description": "Get specific questionnaire template by ID."
+					}
+				},
+				{
+					"name": "Create Template",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Patient Intake Questionnaire\",\n  \"description\": \"Initial assessment for new patients\",\n  \"questions\": [\n    {\n      \"id\": \"q1\",\n      \"text\": \"How are you feeling today?\",\n      \"type\": \"text\",\n      \"required\": true\n    },\n    {\n      \"id\": \"q2\",\n      \"text\": \"Rate your anxiety level\",\n      \"type\": \"scale\",\n      \"min\": 1,\n      \"max\": 10,\n      \"required\": true\n    }\n  ],\n  \"is_active\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates"]
+						},
+						"description": "Create a new questionnaire template. Body type: Raw JSON."
+					}
+				},
+				{
+					"name": "Update Template",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Template Name\",\n  \"description\": \"Updated description\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates/{template_id}",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates", "{template_id}"]
+						},
+						"description": "Update questionnaire template. Body type: Raw JSON. All fields are optional."
+					}
+				},
+				{
+					"name": "Delete Template",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates/{template_id}",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates", "{template_id}"]
+						},
+						"description": "Soft delete a questionnaire template."
+					}
+				},
+				{
+					"name": "Activate Template",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates/{template_id}/activate",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates", "{template_id}", "activate"]
+						},
+						"description": "Activate a questionnaire template (deactivates all other templates)."
+					}
+				},
+				{
+					"name": "Deactivate Template",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/questionnaire-templates/{template_id}/deactivate",
+							"host": ["{{base_url}}"],
+							"path": ["questionnaire-templates", "{template_id}", "deactivate"]
+						},
+						"description": "Deactivate a questionnaire template."
+					}
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "Get All Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/appointments?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["appointments"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get all appointments with pagination."
+					}
+				},
+				{
+					"name": "Get Appointment by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/appointments/{appointment_id}",
+							"host": ["{{base_url}}"],
+							"path": ["appointments", "{appointment_id}"]
+						},
+						"description": "Get specific appointment by ID."
+					}
+				},
+				{
+					"name": "Get Therapist Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/appointments/therapist/{therapist_id}?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["appointments", "therapist", "{therapist_id}"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get all appointments for a specific therapist."
+					}
+				},
+				{
+					"name": "Get Patient Appointments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer session_id:{{admin_session_id}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/appointments/patient/{patient_id}?limit=20&offset=0",
+							"host": ["{{base_url}}"],
+							"path": ["appointments", "patient", "{patient_id}"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "offset",
+									"value": "0"
+								}
+							]
+						},
+						"description": "Get all appointments for a specific patient."
+					}
+				}
+			]
+		}
+	]
+}
