@@ -22,6 +22,8 @@ jobs:
             # Navigate to project directory
             cd ~/${{ secrets.PROJECT_FOLDER }}
 
+            source ~/.bashrc
+
             # Pull latest changes or clone if doesn't exist
             if [ -d ".git" ]; then
               echo "Pulling latest changes..."
@@ -30,15 +32,6 @@ jobs:
               echo "Directory exists but not a git repo. Please check manually."
               exit 1
             fi
-
-            echo "USER: $USER"
-            echo "HOME: $HOME"
-            echo "SHELL: $SHELL"
-            echo "PATH: $PATH"
-            which node
-            which npm
-            which pm2
-            env
 
             # Install dependencies
             echo "Installing dependencies..."
