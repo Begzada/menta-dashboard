@@ -14,13 +14,13 @@ import {
 } from 'lucide-react';
 
 const navigation = [
-  { name: 'Overview', href: '/management/dashboard', icon: LayoutDashboard },
-  { name: 'Accounts', href: '/management/dashboard/accounts', icon: Users },
-  { name: 'Therapists', href: '/management/dashboard/therapists', icon: UserCog },
-  { name: 'Patients', href: '/management/dashboard/patients', icon: UserCheck },
-  { name: 'Certificates', href: '/management/dashboard/certificates', icon: FileCheck },
-  { name: 'Events', href: '/management/dashboard/events', icon: Calendar },
-  { name: 'Questionnaires', href: '/management/dashboard/questionnaires', icon: ClipboardList },
+  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Accounts', href: '/dashboard/accounts', icon: Users },
+  { name: 'Therapists', href: '/dashboard/therapists', icon: UserCog },
+  { name: 'Patients', href: '/dashboard/patients', icon: UserCheck },
+  { name: 'Certificates', href: '/dashboard/certificates', icon: FileCheck },
+  { name: 'Events', href: '/dashboard/events', icon: Calendar },
+  { name: 'Questionnaires', href: '/dashboard/questionnaires', icon: ClipboardList },
 ];
 
 export default function Sidebar() {
@@ -30,7 +30,7 @@ export default function Sidebar() {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/session', { method: 'DELETE' });
-      router.push('/management/login');
+      router.push('/login');
     } catch (error) {
       console.error('Logout failed:', error);
     }

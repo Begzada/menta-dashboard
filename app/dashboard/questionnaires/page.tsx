@@ -75,7 +75,7 @@ export default function QuestionnairesPage() {
         <div className="flex gap-2">
           <button
             onClick={() =>
-              router.push(`/management/dashboard/questionnaires/${row.id}/edit`)
+              router.push(`/dashboard/questionnaires/${row.id}/edit`)
             }
             className="p-1 text-blue-600 hover:bg-blue-50 rounded"
             title="Edit"
@@ -104,7 +104,7 @@ export default function QuestionnairesPage() {
           </p>
         </div>
         <button
-          onClick={() => router.push("/management/dashboard/questionnaires/create")}
+          onClick={() => router.push("/dashboard/questionnaires/create")}
           className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800"
         >
           <Plus className="w-5 h-5" />

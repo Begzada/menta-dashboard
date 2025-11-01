@@ -48,7 +48,7 @@ export default function LoginPage() {
       // Also save to localStorage for client-side access
       localStorage.setItem('menta_session', sessionId);
 
-      router.push("/management/dashboard");
+      router.push("/dashboard");
     } catch (err) {
       const axiosError = err as AxiosError<{ message?: string }>;
       setError(axiosError.response?.data?.message || "Invalid OTP");

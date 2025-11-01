@@ -30,7 +30,7 @@ export default function EditQuestionnairePage() {
     setIsSubmitting(true);
     try {
       await updateMutation.mutateAsync(data);
-      router.push('/management/dashboard/questionnaires');
+      router.push('/dashboard/questionnaires');
     } catch (error) {
       setIsSubmitting(false);
       throw error;
@@ -38,7 +38,7 @@ export default function EditQuestionnairePage() {
   };
 
   const handleCancel = () => {
-    router.push('/management/dashboard/questionnaires');
+    router.push('/dashboard/questionnaires');
   };
 
   if (isLoading) {
